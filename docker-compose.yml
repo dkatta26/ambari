@@ -1,0 +1,19 @@
+FROM ubuntu:latest
+
+RUN  apt-get -y update && apt-get -y install openjdk-11-jdk && apt-get install vim -y && apt install net-tools -y 
+COPY cmak-3.0.0.7.zip /
+COPY apache-zookeeper-3.5.10-bin.tar.gz /
+RUN  /bin/sh -c 'unzip  /cmak-3.0.0.7.zip'
+RUN  /bin/sh -c 'unzip  /apache-zookeeper-3.5.10-bin.tar.gz'
+RUN  /bin/sh -c 'echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> /etc/profile'
+RUN  /bin/sh -c 'echo "export PATH=$JAVA_HOME/bin:$PATH" >> /etc/profile'
+RUN /bin/sh -c 'source /etc/profile'
+COPY zoo.cfg /apache-zookeeper-3.5.10-bin/conf/
+RUN  /apache-zookeeper-3.5.10-bin/bin/zkServer.sh start
+
+WORKDIR /cmak-3.0.0.7
+RUN  mv /cmak-3.0.0.7/conf/application.conf /cmak-3.0.0.7/conf/application.conf.bkp
+COPY application.conf /cmak-3.0.0.7/conf/
+
+CMD ["/cmak-3.0.0.7/bin/cmak -Dhttp.port=9000"]
+EXPOSE 9000
